@@ -403,3 +403,53 @@ body:not(.top-sidenote-callout-title) .setting-item[data-id="top-right-sidenote-
   }
 }
 ```
+
+## 结合其他插件便捷添加边注
+效果演示：![未命名 - 笔记 - Obsidian v1 5 3 2024-02-07 17-49-13](https://github.com/PKM-er/Pkmer-Docs/assets/144025083/7c936469-c00b-403b-bce4-747fb160de08)
+
+- 需要使用到的插件
+  - templater
+  - commander
+ 
+### step1 添加templater自动化模版
+添加自动化模版基本步骤可参考[[Templater 实现关键词自动化套用模板]] [b站up Chris的视频](https://www.bilibili.com/video/BV1c64y1W7c2)
+新建便捷添加边注的模版文件，命名为“Insert Callouts” .
+将下面的内容添加至文件内（注：直接复制文本，不需要含有代码框，此处含有代码框是为了与正文区分）
+```
+<%*
+const callouts = {
+note: '🌐 ✏ Note',
+info: '🔵 ℹ Info',
+todo: '🔵 🔳 Todo',
+tip: '🌐 🔥 Tip / Hint / Important',
+abstract: '🌐 📋 Abstract / Summary / TLDR',
+question: '🟡 ❓ Question / Help / FAQ',
+quote: '🔘 💬 Quote / Cite',
+example: '🟣 📑 Example',
+success: '🟢 ✔ Success / Check / Done',
+warning: '🟠 ⚠ Warning / Caution / Attention',
+failure: '🔴 ❌ Failure / Fail / Missing',
+danger: '🔴 ⚡ Danger / Error',
+bug: '🔴 🐞 Bug',
+};
+
+const p = await tp.system.suggester(["正文","左侧","右侧"], [" ", "|aside-l", "|aside-r"], true, 'Select callout position.'); 
+const type = await tp.system.suggester(Object.values(callouts), Object.keys(callouts), true, 'Select callout type.');
+
+
+const title = await tp.system.prompt('Title:', '', true);
+let content = await tp.system.prompt('Content (New line -> Shift + Enter):', '', true, true);
+content = content.split('\n').map(line => `> ${line}`).join('\n')  
+
+const calloutHead = `> [!${type}${p}]+ ${title}\n`;
+
+tR += calloutHead + content + '\n' + '\n'
+-%>
+```
+
+### step2 在Template HotKeys添加快捷指令
+打开设置，选择templater插件，下拉找到“Template HotKeys”，点击“Add new hotkey for templater”, 选择模版为刚刚新建的“Insert Callouts.md”。在这里就可以直接添加快捷键。
+
+### step3 使用commander添加快捷按钮
+不习惯使用快捷键或者快捷键已经很拥挤了，可以使用commander模组添加快捷按钮。这里简单介绍在右键菜单中添加快捷按钮。
+安装好commander以后，在任意文件编辑界面右键，点击右键菜单下面的“添加命令”，选择“Templater: 模版文件路径/Insert Callouts.md”, 重命名并保存。
